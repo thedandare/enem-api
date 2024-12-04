@@ -62,6 +62,7 @@ export const QuestionDetailSchema = QuestionSchema.extend({
         .openapi({ example: 'A' }),
     alternativesIntroduction: z
         .string()
+        .nullable()
         .describe('O texto introdutório das alternativas da questão')
         .openapi({
             example: 'Com base no texto, selecione a alternativa correta',
