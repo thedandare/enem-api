@@ -1,13 +1,10 @@
 import { NextRequest } from 'next/server';
 import { ipAddress, geolocation } from '@vercel/functions';
-import { PrismaClient } from '@prisma/client';
 
 export async function logger(request: NextRequest) {
     if (process.env.NODE_ENV === 'development') {
         return;
     }
-
-    const prisma = new PrismaClient();
 
     try {
         const vercelGeo = geolocation(request);
@@ -25,29 +22,24 @@ export async function logger(request: NextRequest) {
         const country = vercelGeo?.country || geo?.country;
         const region = vercelGeo?.region || geo?.region;
         const city = vercelGeo?.city || geo?.city;
-        const latitude = vercelGeo?.latitude || geo?.latitude;
-        const longitude = vercelGeo?.longitude || geo?.longitude;
 
         const timestamp = new Date().toISOString();
 
-        const logEntry = {
-            url,
-            method,
-            ip: ip || null,
-            userAgent,
-            referer,
-            country: country ? decodeURIComponent(country) : null,
-            region: region ? decodeURIComponent(region) : null,
-            city: city ? decodeURIComponent(city) : null,
-            latitude: latitude ? parseFloat(latitude) : null,
-            longitude: longitude ? parseFloat(longitude) : null,
-            timestamp,
-        };
-
-        await prisma.log.create({
-            data: logEntry,
-        });
+        // Console-based logging for production monitoring
+        console.log(
+            JSON.stringify({
+                timestamp,
+                method,
+                url,
+                ip: ip || null,
+                userAgent,
+                referer,
+                country: country ? decodeURIComponent(country) : null,
+                region: region ? decodeURIComponent(region) : null,
+                city: city ? decodeURIComponent(city) : null,
+            }),
+        );
     } catch (error) {
-        console.error('Failed to save log', error);
+        console.error('Failed to log request', error);
     }
 }

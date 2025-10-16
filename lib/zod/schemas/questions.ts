@@ -158,3 +158,78 @@ export const GetQuestionDetailsQuerySchema = z.object({
         .describe('O idioma desejado da questão')
         .openapi({ example: 'ingles' }),
 });
+
+export const SearchQuestionsQuerySchema = z.object({
+    q: z
+        .string()
+        .min(1)
+        .describe('A palavra-chave para buscar nas questões')
+        .openapi({ example: 'democracia' }),
+    year: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe('Filtrar por ano específico da prova')
+        .openapi({ example: 2023 }),
+    limit: z.coerce
+        .number()
+        .int()
+        .positive()
+        .default(10)
+        .describe('O número máximo de questões a serem retornadas')
+        .openapi({ example: 10 }),
+    offset: z.coerce
+        .number()
+        .int()
+        .nonnegative()
+        .default(0)
+        .describe('O número da primeira questão a ser retornada')
+        .openapi({ example: 0 }),
+});
+
+export const SearchResultSchema = QuestionDetailSchema.extend({
+    matchedIn: z
+        .array(z.enum(['context', 'alternative']))
+        .describe('Indica onde a palavra-chave foi encontrada')
+        .openapi({ example: ['context', 'alternative'] }),
+    matchedAlternatives: z
+        .array(z.string())
+        .optional()
+        .describe('Letras das alternativas que contêm a palavra-chave')
+        .openapi({ example: ['A', 'C'] }),
+});
+
+export const SearchQuestionsResponseSchema = z.object({
+    metadata: z.object({
+        keyword: z
+            .string()
+            .describe('A palavra-chave pesquisada')
+            .openapi({ example: 'democracia' }),
+        limit: z
+            .number()
+            .int()
+            .positive()
+            .describe('O número máximo de questões retornadas')
+            .openapi({ example: 10 }),
+        offset: z
+            .number()
+            .int()
+            .nonnegative()
+            .describe('O número da primeira questão retornada')
+            .openapi({ example: 0 }),
+        total: z
+            .number()
+            .int()
+            .nonnegative()
+            .describe('O número total de questões encontradas')
+            .openapi({ example: 42 }),
+        hasMore: z
+            .boolean()
+            .describe('Se há mais questões disponíveis ou não')
+            .openapi({ example: true }),
+    }),
+    results: z
+        .array(SearchResultSchema)
+        .describe('As questões encontradas na busca'),
+});
